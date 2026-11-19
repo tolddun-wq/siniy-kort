@@ -20,7 +20,7 @@ window.SK = (() => {
     { id: 'late',    label: 'Будни, 21:00–23:00', from: 21, to: 23, weekend: false, price: 2000 },
     { id: 'weekend', label: 'Сб и вс, весь день',  from: 7,  to: 23, weekend: true,  price: 2000 },
   ];
-  const extras = { coach: 1200, trial: 900, tournament: 1500, cancelHours: 6, remindMinutes: 30, groupMax: 6, groupLesson: 1000, kidsLesson: 750 };
+  const extras = { coach: 1200, trial: 900, tournament: 1500, cancelHours: 6, remindMinutes: 30, groupMax: 6, groupLesson: 1000, kidsLesson: 750, racketRent: 300 };
 
   const courts = [
     { id: 1, name: 'Корт 1', note: 'центральный, с трибуной', img: 'img/hall.jpg' },

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Синий корт — мини-приложение (демо)</title>
+<meta name="description" content="Мини-приложение теннисного клуба в Telegram: бронь корта, мои записи, ответы на вопросы.">
+<link rel="icon" href="../img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css?v=1">
+<script src="https://telegram.org/js/telegram-web-app.js?59"></script>
+</head>
+<body>
+<aside class="side" aria-label="О мини-приложении">
+  <a class="back" href="../index.html">← Сайт клуба</a>
+  <i class="tball" aria-hidden="true"></i>
+  <h1>Мини-приложение клуба в Telegram</h1>
+  <p>Так клиент бронирует корт, не выходя из Telegram: три касания — и бронь готова. За 30 минут бот напомнит, какой корт и что взять.</p>
+  <ul>
+    <li><b>Бронь</b> — дата, корт, время, тренер или партнёр</li>
+    <li><b>Мои записи</b> — отмена в одно касание</li>
+    <li><b>Вопросы</b> — поиск понимает опечатки и разговорные слова</li>
+  </ul>
+  <p class="note">Демо: клуб вымышленный, записи хранятся только в вашем браузере.</p>
+</aside>
+
+<div class="phone">
+  <main class="app" id="app">
+    <header class="top">
+      <div class="hi"><i class="tball" aria-hidden="true"></i><div><small id="hello">Добрый день</small><b>Синий корт</b></div></div>
+      <span class="demo-tag" id="demoTag">демо</span>
+    </header>
+
+    <section class="screen" id="s-book" data-title="Бронь">
+      <h2>Забронировать корт</h2>
+      <div class="block"><div class="bl">Дата</div><div class="days" id="days"></div></div>
+      <div class="block"><div class="bl">Корт</div><div class="courts" id="courts"></div></div>
+      <div class="block"><div class="bl">Время <span id="timeNote"></span></div><div class="slots" id="slots"></div></div>
+      <div class="block"><div class="bl">Как играем</div>
+        <div class="seg" id="mode"><button type="button" class="on" data-m="solo">Только корт</button><button type="button" data-m="coach">С тренером</button><button type="button" data-m="partner">Партнёр</button></div>
+        <div class="coaches" id="coaches" hidden></div>
+      </div>
+      <div class="sumbar" id="sumbar"></div>
+    </section>
+
+    <section class="screen" id="s-my" data-title="Мои записи" hidden>
+      <h2>Мои записи</h2>
+      <div id="myList"></div>
+    </section>
+
+    <section class="screen" id="s-faq" data-title="Вопросы" hidden>
+      <h2>Вопросы о клубе</h2>
+      <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg><input id="q" type="search" placeholder="Например: абик, душ, ребёнку 6 лет" autocomplete="off"></label>
+      <div class="hints" id="hints"></div>
+      <div id="answers"></div>
+    </section>
+
+    <nav class="tabs" aria-label="Разделы">
+      <button type="button" class="on" data-s="book"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Бронь</button>
+      <button type="button" data-s="my"><svg viewBox="0 0 24 24"><path d="M6 4h12v16l-6-3.5L6 20z"/></svg>Мои записи<b id="cnt" hidden>0</b></button>
+      <button type="button" data-s="faq"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5v.01"/></svg>Вопросы</button>
+    </nav>
+  </main>
+</div>
+<div id="layer"></div>
+<script src="../js/data.js?v=23"></script>
+<script src="faq.js?v=1"></script>
+<script src="app.js?v=1"></script>
+</body>
+</html>

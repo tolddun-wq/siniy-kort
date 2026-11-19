@@ -55,6 +55,7 @@
           <div><small>Каждый день</small>${C.open}:00–${C.close}:00</div>
           <div><small>Почта</small>${C.email}</div>
         </div>
+        <a class="f-owner" href="${u('app/')}">Мини-приложение в Telegram: бронь в три касания →</a><br>
         <a class="f-owner" href="${u('kabinet.html')}">Как владелец меняет абонементы и видит заявки →</a>
       </div>
     </div>
