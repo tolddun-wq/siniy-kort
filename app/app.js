@@ -28,7 +28,7 @@
     closeTop?.();
     const el = document.createElement('div'); el.className = 'sheet';
     el.innerHTML = `<div class="sheet-box" role="dialog" aria-modal="true"><button class="sheet-x" type="button" data-close aria-label="Закрыть">×</button>${html}</div>`;
-    $('#layer').appendChild(el);
+    $('#app').appendChild(el);
     const close = () => { el.remove(); closeTop = null; if (inTg) { tg.BackButton.offClick(close); tg.BackButton.hide(); } };
     closeTop = close;
     el.addEventListener('click', e => { if (e.target === el || e.target.closest('[data-close]')) close(); });
@@ -37,7 +37,7 @@
     return close;
   }
   addEventListener('keydown', e => { if (e.key === 'Escape') closeTop?.(); });
-  function toast(t) { document.querySelector('.toast')?.remove(); const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2800); }
+  function toast(t) { document.querySelector('.toast')?.remove(); const el = document.createElement('div'); el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = t; $('#app').appendChild(el); setTimeout(() => el.remove(), 2800); }
   const demoCall = () => sheet(`<h3>Позвонить не получится</h3><p>Клуб вымышленный, номер ${C.phone} ненастоящий. Хотите такое приложение для своего клуба — напишите разработчику.</p><div class="btns"><a class="btn ball wide" href="${C.telegram}" target="_blank" rel="noopener">Написать в Telegram</a></div>`);
   const openLink = url => { if (/^https:\/\/t\.me\//.test(url)) tg.openTelegramLink(url); else tg.openLink(new URL(url, location.href).href); };
 
