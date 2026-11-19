@@ -38,7 +38,7 @@
       <h3>${a.title}</h3><div class="sub">${a.sessions}</div><p class="whyt">${why}</p>
       <div class="pr"><b>${S.fmt(a.price)}</b><small>в месяц<br>${S.fmt(per)} за ${o.unit}</small></div>
       ${save > 0 ? `<div class="save">Разово вышло бы ${S.fmt(o.single)} — экономия <b>${S.fmt(save)}</b></div>` : ''}
-      <button class="btn ball" type="button" data-buy="${a.id}">Оформить абонемент <span class="arr">→</span></button>
+      <button class="btn ball" type="button" data-buy="${a.id}">Оформить абонемент <span class="arr">↗</span></button>
       <p class="alt">${fmt === 'court' ? `Нужен корт один раз? <a href="bron.html">Свободные часы</a>` : `Сомневаетесь? <a href="bron.html?coach=igor">Пробное занятие за ${S.fmt(S.extras.trial)}</a>`}</p></div>`;
     $('#res').dataset.offer = JSON.stringify(a);
   }
@@ -47,7 +47,7 @@
     const list = S.visibleAbons().filter(a => tab === 'all' || a.kind === tab || (tab === 'group' && a.kind === 'custom'));
     $('#abons').innerHTML = list.length ? list.map(a => `<article class="ab"><div class="ph" style="background-image:url('${a.img}')">${a.tag ? `<span>${a.tag}</span>` : ''}</div>
       <div class="in"><h3>${a.title}</h3><div class="meta">${a.sessions}</div><p>${a.text || ''}</p>
-      <div class="foot"><b>${S.fmt(a.price)}<small> / мес</small></b><button class="btn navy" type="button" data-buy="${a.id}">Оформить <span class="arr">→</span></button></div></div></article>`).join('')
+      <div class="foot"><b>${S.fmt(a.price)}<small> / мес</small></b><button class="btn navy" type="button" data-buy="${a.id}">Оформить <span class="arr">↗</span></button></div></div></article>`).join('')
       : '<div class="empty-box">В этом разделе пока нет абонементов.</div>';
     UI.reveal($('#abons'));
   }

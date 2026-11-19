@@ -866,3 +866,7 @@ body.menu-open .hdr .burger span{background:#fff}
   .modal-box p{font-size:14px}
 }
 @media (max-width:480px){.f-grid{grid-template-columns:1fr;gap:var(--s2)}.f-grid a,.f-grid div{overflow-wrap:anywhere}}
+/* календарь: ячейки сжимаются на любой ширине */
+.cal-w,.cal-g{grid-template-columns:repeat(7,minmax(0,1fr))}
+.cal-g button{padding:0;min-width:0}
+@media (max-width:300px){.cal{padding:6px}.cal-g button{font-size:11px;border-radius:7px}.cal-w span{font-size:10px}}

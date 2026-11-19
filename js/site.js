@@ -85,7 +85,7 @@
     return close;
   }
   function confirmBox(title, text, okText, onOk) {
-    modal(`<h3>${title}</h3><p>${text}</p><div class="modal-btns"><button class="btn navy" type="button" data-ok>${okText} <span class="arr">→</span></button><button class="btn plain" type="button" data-close>Оставить</button></div>`,
+    modal(`<h3>${title}</h3><p>${text}</p><div class="modal-btns"><button class="btn navy" type="button" data-ok>${okText} <span class="arr">↗</span></button><button class="btn plain" type="button" data-close>Оставить</button></div>`,
       { onOpen: (m, close) => m.querySelector('[data-ok]').addEventListener('click', () => { close(); onOk(); }) });
   }
   function toast(t) {
@@ -99,7 +99,7 @@
       <label class="field"><span>Как к вам обращаться</span><input name="name" autocomplete="given-name" placeholder="Например, Анна"><em class="e" hidden></em></label>
       <label class="field"><span>Телефон</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__"><em class="e" hidden></em></label>
       <label class="check" style="margin-bottom:var(--s3)"><input type="checkbox" name="tg" checked><span>Напомнить в Telegram за ${S.extras.remindMinutes} минут</span></label>
-      <button class="btn navy" type="submit">Записаться <span class="arr">→</span></button></form>`,
+      <button class="btn navy" type="submit">Записаться <span class="arr">↗</span></button></form>`,
       { onOpen: (m, close) => { const f = m.querySelector('form'); phoneMask(f.phone); f.addEventListener('submit', e => { e.preventDefault(); if (!validate(f)) return; close(); onDone({ name: f.name.value.trim(), phone: f.phone.value, tg: f.tg.checked }); }); } });
   }
   function phoneMask(inp) {
@@ -125,7 +125,7 @@
   const entered = !fromInside || nav?.type === 'reload';
   if (page !== 'notfound' && entered && !location.search.includes('chk=1')) {
     setTimeout(() => modal(`<i class="tball" aria-hidden="true"></i><h3>Это сайт для портфолио</h3><p>Теннисный клуб «${C.name}» вымышленный. Бронь, запись и абонементы здесь работают, но не по-настоящему: они только показывают, как это выглядит у клуба. Никто не приедет, деньги не спишутся.</p>
-        <div class="modal-btns"><button class="btn ball" type="button" data-close>Понятно, смотреть сайт <span class="arr">→</span></button><a class="btn plain" href="${C.telegram}" target="_blank" rel="noopener">Хочу такой сайт</a></div>`), 500);
+        <div class="modal-btns"><button class="btn ball" type="button" data-close>Понятно, смотреть сайт <span class="arr">↗</span></button><a class="btn plain" href="${C.telegram}" target="_blank" rel="noopener">Хочу такой сайт</a></div>`), 500);
   }
   // обводка фокуса — только для клавиатуры
   addEventListener('keydown', e => { if (e.key === 'Tab') document.documentElement.classList.add('kbd'); });

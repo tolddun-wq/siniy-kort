@@ -63,7 +63,7 @@
     const z = e.target.closest('[data-z]');
     if (z) {
       const c = S.courts.find(x => x.id === +z.dataset.z);
-      UI.modal(`<div class="zoom"><img src="${c.img}" alt="${c.name}"><h3>${c.name}</h3><p>${c.note}. Покрытие хард, ровный свет без бликов.</p><div class="modal-btns">${freeOf(st.day, c.id).length ? `<button class="btn ball" type="button" data-close data-pickc="${c.id}">Выбрать ${c.name.toLowerCase()} <span class="arr">→</span></button>` : `<p class="note">В этот день корт занят — выберите другую дату.</p>`}<button class="btn plain" type="button" data-close>Закрыть</button></div></div>`,
+      UI.modal(`<div class="zoom"><img src="${c.img}" alt="${c.name}"><h3>${c.name}</h3><p>${c.note}. Покрытие хард, ровный свет без бликов.</p><div class="modal-btns">${freeOf(st.day, c.id).length ? `<button class="btn ball" type="button" data-close data-pickc="${c.id}">Выбрать ${c.name.toLowerCase()} <span class="arr">↗</span></button>` : `<p class="note">В этот день корт занят — выберите другую дату.</p>`}<button class="btn plain" type="button" data-close>Закрыть</button></div></div>`,
         { onOpen: m => { m.classList.add('wide'); m.querySelector('[data-pickc]')?.addEventListener('click', () => { st.court = c.id; st.hours = []; renderAll(); }); } });
       return;
     }
@@ -116,7 +116,7 @@
     $('#mbar').classList.toggle('show', !!st.hours.length && !$('#book').hidden);
     if (!st.hours.length) {
       sum.classList.add('empty');
-      sum.innerHTML = `<div class="t">Ваша бронь</div><h3>${c.name}, ${human(st.day)}</h3><p class="sum-hint">Выберите свободный час в шаге 3 — здесь появится итог.</p><ul><li><span>Час на корте</span><span>от ${S.fmt(S.minCourt)}</span></li><li><span>Отмена без штрафа</span><span>за ${S.extras.cancelHours} часов</span></li></ul><button class="btn ball" type="button" disabled>Забронировать <span class="arr">→</span></button>`;
+      sum.innerHTML = `<div class="t">Ваша бронь</div><h3>${c.name}, ${human(st.day)}</h3><p class="sum-hint">Выберите свободный час в шаге 3 — здесь появится итог.</p><ul><li><span>Час на корте</span><span>от ${S.fmt(S.minCourt)}</span></li><li><span>Отмена без штрафа</span><span>за ${S.extras.cancelHours} часов</span></li></ul><button class="btn ball" type="button" disabled>Забронировать <span class="arr">↗</span></button>`;
       return;
     }
     sum.classList.remove('empty');
@@ -129,7 +129,7 @@
       <li><span>Ракетка и мячи</span><span>${$('#rent').checked ? 'бесплатно' : 'свои'}</span></li>
       <li><span>Отмена без штрафа</span><span>за ${S.extras.cancelHours} часов</span></li></ul>
       <div class="total"><span>${st.mode === 'partner' ? 'Ваша часть' : 'Итого'}</span><b>${S.fmt(p.total)}</b></div>
-      <button class="btn ball" type="button" id="go">Забронировать <span class="arr">→</span></button>
+      <button class="btn ball" type="button" id="go">Забронировать <span class="arr">↗</span></button>
       <p class="note">Оплата на месте, картой или наличными.</p>`;
     $('#go').addEventListener('click', submit);
   }
@@ -145,7 +145,7 @@
     const done = $('#done'); done.hidden = false;
     done.innerHTML = `<i class="tball" aria-hidden="true"></i><div class="lbl">Бронь создана</div><h2>${b.title}, ${b.when}</h2>
       <p>${b.name}, корт ваш. ${b.coach ? `Тренер ${b.coach} встретит вас у корта. ` : ''}${st.mode === 'partner' ? 'Партнёра подберём и пришлём его имя за день до игры. ' : ''}${b.tg ? `Напоминание придёт в Telegram за ${S.extras.remindMinutes} минут. ` : ''}К оплате на месте: ${S.fmt(b.price)}.</p>
-      <div class="btns"><a class="btn navy" href="#my">Мои записи <span class="arr">↓</span></a><button class="btn plain" type="button" id="again">Забронировать ещё</button></div>`;
+      <div class="btns"><a class="btn navy" href="#my">Мои записи <span class="arr">↗</span></a><button class="btn plain" type="button" id="again">Забронировать ещё</button></div>`;
     done.scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('#again').addEventListener('click', () => { done.hidden = true; $('#book').hidden = false; st.hours = []; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     renderMy();

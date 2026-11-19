@@ -8,7 +8,7 @@
 
   const card = a => `<article class="ab"><div class="ph" style="background-image:url('${a.img}')">${a.tag ? `<span>${esc(a.tag)}</span>` : ''}</div>
     <div class="in"><h3>${esc(a.title) || 'Название'}</h3><div class="meta">${esc(a.sessions) || 'Что входит'}${a.period ? ' · ' + esc(a.period) : ''}</div><p>${esc(a.text) || 'Описание появится здесь'}</p>
-    <div class="foot"><b>${a.price ? S.fmt(a.price) : '— ₽'}</b><span class="btn navy" aria-hidden="true">Оформить <span class="arr">→</span></span></div></div></article>`;
+    <div class="foot"><b>${a.price ? S.fmt(a.price) : '— ₽'}</b><span class="btn navy" aria-hidden="true">Оформить <span class="arr">↗</span></span></div></div></article>`;
 
   function renderList() {
     $('#list').innerHTML = list.length ? list.map(a => `<div class="li${a.id === editId ? ' sel' : ''}${a.hidden ? ' off' : ''}"><img src="${a.img}" alt="">
