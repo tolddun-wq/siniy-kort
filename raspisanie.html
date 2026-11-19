@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Расписание групп — Синий корт (демо)</title>
+<meta name="description" content="Группы для взрослых и детей, утренний теннис и турнир для новичков. Свободные места видно сразу.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=23">
+</head>
+<body data-page="raspisanie">
+<div id="hdr"></div>
+<main>
+<section class="phead" style="background-image:url(img/players-net.jpg);background-position:center 30%">
+  <div class="phead-in">
+    <div><div class="crumbs"><a href="index.html">Главная</a> / Расписание</div><h1>Расписание групп</h1></div>
+    <p>До <span data-x="groupMax">6</span> человек на корт. Запись в группу — в пару нажатий, свободные места видно сразу.</p>
+  </div>
+</section>
+<div class="wrap">
+  <div class="filters">
+    <div class="seg scroll" id="flt" role="group" aria-label="Уровень">
+      <button type="button" class="on" data-l="all">Все группы</button><button type="button" data-l="новички">Для новичков</button><button type="button" data-l="средний">Уже играю</button><button type="button" data-l="дети">Дети</button><button type="button" data-l="любой">Любой уровень</button>
+    </div>
+    <div class="wk" id="wk"></div>
+  </div>
+  <div class="daytabs" id="dtabs" role="tablist" aria-label="День недели"></div>
+  <div class="week" id="week"></div>
+  <div class="sheet-note">
+    <svg viewBox="0 0 36 36" aria-hidden="true"><rect x="3" y="3" width="30" height="30" rx="6" fill="#1E8E3E"/><path d="M10 12h16v14H10zM10 17h16M10 22h16M17 12v14" fill="none" stroke="#fff" stroke-width="2"/></svg>
+    <span><b>Пример: расписание из Google Таблицы.</b> В настоящем клубе администратор меняет строку в таблице — сайт показывает новое время через минуту, программист не нужен.</span>
+  </div>
+</div>
+</main>
+<div id="ftr"></div>
+<script src="js/data.js?v=23"></script>
+<script src="js/site.js?v=23"></script>
+<script src="js/raspisanie.js?v=23"></script>
+</body>
+</html>

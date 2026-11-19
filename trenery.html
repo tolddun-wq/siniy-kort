@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренеры — Синий корт (демо)</title>
+<meta name="description" content="Четыре тренера: взрослые с нуля, подготовка к матчам, детская секция, утренний теннис.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=23">
+</head>
+<body data-page="trenery">
+<div id="hdr"></div>
+<main>
+<section class="phead" style="background-image:url(img/coach-kid.jpg);background-position:center 25%">
+  <div class="phead-in">
+    <div><div class="crumbs"><a href="index.html">Главная</a> / Тренеры</div><h1>Тренеры клуба</h1></div>
+    <p>Час с тренером — от <span data-price="coach-min">2 800 ₽</span> вместе с кортом. Пробное занятие — <span data-price="trial">900 ₽</span>, 45 минут один на один.</p>
+  </div>
+</section>
+<div class="wrap">
+  <div class="coaches" id="coaches"></div>
+</div>
+</main>
+<div id="ftr"></div>
+<script src="js/data.js?v=23"></script>
+<script src="js/site.js?v=23"></script>
+<script>
+(() => {
+  const S = window.SK;
+  document.getElementById('coaches').innerHTML = S.coaches.map(c => `
+    <article class="coach" id="${c.id}">
+      <div class="ph" style="background-image:url(${c.img})"><small>фото для примера</small></div>
+      <div class="in"><span class="role">${c.role}</span><h3>${c.name}</h3><p>${c.about}</p>
+        <dl><dt>Когда</dt><dd>${c.days}</dd><dt>Час</dt><dd>${S.fmt(S.minCoach)} с кортом, пробное — ${S.fmt(S.extras.trial)}</dd>
+        <dt>Группы</dt><dd>${S.groups.filter(g => g.coach === c.id).map(g => g.name).filter((v, i, a) => a.indexOf(v) === i).join(', ') || 'только индивидуально'}</dd></dl>
+        <a class="btn navy" href="bron.html?coach=${c.id}">Записаться к тренеру <span class="arr">↗</span></a></div>
+    </article>`).join('');
+  window.SKUI.reveal();
+  if (location.hash) setTimeout(() => document.querySelector(location.hash)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 150);
+})();
+</script>
+</body>
+</html>

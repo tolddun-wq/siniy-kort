@@ -1,0 +1,47 @@
+Фото для концепций (Unsplash, бесплатная лицензия)
+pool-lanes   https://unsplash.com/photos/W2oKzevjPwA
+pool-swimmer https://images.unsplash.com/photo-1784619752952-b77280d46aa3
+pool-smile   https://images.unsplash.com/photo-1782573174619-c05ed6e36d48
+box-ropes    https://images.unsplash.com/photo-1773289338198-65476cc90fb2
+box-ring     https://images.unsplash.com/photo-1575747515871-2e323827539e
+box-wrap     https://images.unsplash.com/photo-1584829781342-e2e97f329b65
+box-pads     https://images.unsplash.com/photo-1517438322307-e67111335449
+climb-yellow https://images.unsplash.com/photo-1696105539018-a73a53770934
+climb-red    https://images.unsplash.com/photo-1689775884478-9ed19b79d659
+climb-five   https://images.unsplash.com/photo-1775654792298-797c44f5d439
+
+Концепции v2:
+a12  https://images.unsplash.com/photo-1695326288959-89be49070059
+j03  https://images.unsplash.com/photo-1782849159378-a068078370bf
+j04  https://images.unsplash.com/photo-1515025617920-e1e674b5033c
+j16  https://images.unsplash.com/photo-1603210185603-57fc717c4456
+(a12 = pool-top, повёрнуто на 90°)
+
+Концепции v3:
+k03  https://images.unsplash.com/photo-1750858287221-e6c72357ce12
+k06  https://images.unsplash.com/photo-1750858285407-069e874245d4
+k15  https://images.unsplash.com/photo-1660463529636-8cbf1ab9af8e
+t01  https://images.unsplash.com/photo-1554068865-24cecd4e34b8
+t13  https://images.unsplash.com/photo-1696661115319-a9b6801e2571
+s08  https://images.unsplash.com/photo-1710739513833-48b074290a8e
+s15  https://images.unsplash.com/photo-1530138948699-6a75eebc9d9b
+r06  https://images.unsplash.com/photo-1571649123442-dc0e1965e037
+r08  https://images.unsplash.com/photo-1543398971-17eea343659e
+
+Синий корт (сайт, img/):
+hero-player     https://images.unsplash.com/photo-1714840961579-6b072a12536e
+net-balls-blue  https://images.unsplash.com/photo-1671750655126-d36f28360efd
+racket          https://images.unsplash.com/photo-1617883861744-13b534e3b928
+forehand        https://images.unsplash.com/photo-1789457524037-6885ee0b3bb2
+hall            https://images.unsplash.com/photo-1787311158758-740c4218de92
+coach-kid       https://images.unsplash.com/photo-1730182160798-1e6f7bd2c476
+kids-group      https://images.unsplash.com/photo-1660463531142-ada502385e67
+players-net     https://images.unsplash.com/photo-1774600328263-c52a77bd7408
+ball-racket     https://images.unsplash.com/photo-1599586120162-c282f39edd1e
+woman-forehand  https://images.unsplash.com/photo-1789457523931-244fa3d57e35
+coach-igor      https://images.unsplash.com/photo-1758887253250-597a8888f6be
+coach-artem     https://images.unsplash.com/photo-1758887248736-f72d9eb3b6ad
+coach-denis     https://images.unsplash.com/photo-1660463529636-8cbf1ab9af8e
+coach-marina    https://images.unsplash.com/photo-1749107775435-b05af0a33d9d
+kids-highfive   https://images.unsplash.com/photo-1632063947736-6eb5943309fe
+player-indoor   https://images.unsplash.com/photo-1789457523835-11dd7c9e2dc7

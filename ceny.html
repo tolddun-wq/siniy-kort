@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Цены и абонементы — Синий корт (демо)</title>
+<meta name="description" content="Подберите абонемент за 4 вопроса. Цены на аренду кортов, занятия с тренером и группы.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=23">
+</head>
+<body data-page="ceny">
+<div id="hdr"></div>
+<main>
+<section class="phead" style="background-image:url(img/ball-racket.jpg);background-position:center 60%">
+  <div class="phead-in">
+    <div><div class="crumbs"><a href="index.html">Главная</a> / Цены</div><h1>Цены и абонементы</h1></div>
+    <p>Четыре вопроса — и сразу видно, какой абонемент вам подходит, сколько он стоит и сколько вы сэкономите.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="calc">
+    <div class="panel qs" id="qs">
+      <div><h4>1. Кто будет играть?</h4><div class="seg" data-q="who"><button type="button" class="on" data-v="adult">Я, взрослый</button><button type="button" data-v="kid">Ребёнок 5–12 лет</button></div></div>
+      <div data-for="adult"><h4>2. Как хотите заниматься?</h4><div class="seg" data-q="fmt"><button type="button" class="on" data-v="group">В группе с тренером</button><button type="button" data-v="coach">Один на один с тренером</button><button type="button" data-v="court">Сам, своей компанией</button></div></div>
+      <div data-for="adult"><h4>3. Сколько раз в неделю?</h4><div class="seg" data-q="times"><button type="button" data-v="1">Раз в неделю</button><button type="button" class="on" data-v="2">2 раза</button><button type="button" data-v="3">3 раза</button></div></div>
+      <div data-for="time"><h4>4. В какое время удобно?</h4><div class="seg" data-q="when"><button type="button" data-v="day">Днём, будни до 17:00</button><button type="button" class="on" data-v="evening">Вечером, после 17:00</button><button type="button" data-v="weekend">В выходные</button></div>
+        <p class="note" style="margin-top:10px">Днём корт дешевле: ${day} за час против ${eve} вечером.</p></div>
+      <p class="note qs-kid" hidden>Детская секция занимается 2 раза в неделю: будни в 16:00–18:00 и субботу днём. Расписание — на странице <a href="raspisanie.html">«Расписание»</a>.</p>
+      <div class="incl"><h4>В любой абонемент входит</h4><ul>
+        <li><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="6"/><path d="m13.5 13.5 7 7"/></svg><span><b>Ракетка и мячи</b>на первое занятие — бесплатно</span></li>
+        <li><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg><span><b>Заморозка по болезни</b>до 14 дней, по справке</span></li>
+        <li><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 3-6.3"/><path d="M4 4v4h4"/></svg><span><b>Перенос занятия</b>за 6 часов — без потери</span></li>
+        <li><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span><b>Напоминания</b>в Telegram за 30 минут</span></li>
+      </ul></div>
+    </div>
+    <aside class="res" id="res" aria-live="polite"></aside>
+  </div>
+
+  <section class="sec">
+    <div class="lbl">Абонементы</div>
+    <div class="abh"><h2>Все абонементы клуба</h2><div class="tabs" id="atabs"><button type="button" class="on" data-k="all">Все</button><button type="button" data-k="group">Группы</button><button type="button" data-k="coach">С тренером</button><button type="button" data-k="court">Корт</button><button type="button" data-k="kids">Дети</button></div></div>
+    <p class="note" style="margin-top:12px">Абонемент действует месяц с первого занятия. Пропуск по болезни — переносим занятие.</p>
+    <div class="abons" id="abons"></div>
+  </section>
+
+  <section class="sec">
+    <div class="lbl">Разовые услуги</div>
+    <h2>Если без абонемента</h2>
+    <div class="rates">
+      <div class="panel"><h3>Корт на час</h3><p class="note">Цена за корт, а не за человека: играйте вдвоём или вчетвером.</p><ul class="rt" id="rt1"></ul></div>
+      <div class="panel"><h3>Тренер и события</h3><p class="note">Тренер прибавляется к цене корта.</p><ul class="rt" id="rt2"></ul></div>
+    </div>
+    <a class="owner-link" href="kabinet.html">Как владелец клуба меняет эти абонементы → кабинет владельца (пример)</a>
+  </section>
+</div>
+</main>
+<div id="ftr"></div>
+<script src="js/data.js?v=23"></script>
+<script src="js/site.js?v=23"></script>
+<script src="js/ceny.js?v=23"></script>
+</body>
+</html>

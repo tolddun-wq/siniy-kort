@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кабинет владельца (пример) — Синий корт</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=23">
+</head>
+<body data-page="kabinet">
+<div id="hdr"></div>
+<main>
+<section class="phead" style="background-image:url(img/racket.jpg)">
+  <div class="phead-in">
+    <div><div class="crumbs"><a href="index.html">Главная</a> / Кабинет владельца</div><h1>Кабинет владельца</h1></div>
+    <p>Здесь владелец клуба сам меняет абонементы и видит заявки — без программиста. Карточка за минуту: фото, название, что входит, цена.</p>
+  </div>
+</section>
+<div class="wrap">
+  <div class="owner-bar">
+    <span class="ob-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M15 8l2 2"/></svg></span>
+    <div><b>Режим владельца — пример</b><p>Так владелец клуба меняет абонементы: изменения сразу видны всем на странице «Цены». В демо правки видите только вы, на этом устройстве — другие посетители видят обычный сайт.</p></div>
+    <div class="ob-acts"><button class="btn ball" type="button" id="reset2">Вернуть как было</button><a class="btn white" href="ceny.html">Открыть «Цены» <span class="arr">↗</span></a></div>
+  </div>
+  <div class="kab">
+    <div>
+      <div class="tabs" role="tablist"><button type="button" class="on" data-tab="ab">Абонементы</button><button type="button" data-tab="or">Заявки и брони <b id="orCount">0</b></button></div>
+      <div id="tabAb">
+        <div class="list" id="list"></div>
+        <div class="btns" style="margin-top:var(--s3)"><button class="btn navy" type="button" id="add">Добавить абонемент <span class="arr">+</span></button></div>
+      </div>
+      <div id="tabOr" hidden><div class="my-list orders" id="orders"></div></div>
+    </div>
+    <aside class="panel ed" id="ed">
+      <h3 id="edTitle">Новый абонемент</h3>
+      <form id="form" novalidate>
+        <div class="field"><span>Фото</span><div class="pics" id="pics"></div></div>
+        <label class="field"><span>Название</span><input name="title" maxlength="40" placeholder="Например, Утренняя группа"><em class="e" hidden></em></label>
+        <div class="row2">
+          <label class="field"><span>Что входит</span><input name="sessions" maxlength="60" placeholder="8 занятий в месяц, 2 раза в неделю"><em class="e" hidden></em></label>
+          <label class="field"><span>Срок</span><input name="period" maxlength="20" placeholder="1 месяц"></label>
+        </div>
+        <label class="field"><span>Описание</span><textarea name="text" rows="3" maxlength="180" placeholder="Кому подходит и что важно знать"></textarea></label>
+        <div class="row2">
+          <label class="field"><span>Цена, ₽</span><input name="price" inputmode="numeric" placeholder="6 900"><em class="e" hidden></em></label>
+          <label class="field"><span>Метка на фото</span><input name="tag" maxlength="24" placeholder="хит, новинка…"></label>
+        </div>
+        <label class="check"><input type="checkbox" name="show" checked> Показывать на сайте</label>
+        <div class="acts"><button class="btn ball" type="submit">Сохранить <span class="arr">✓</span></button><button class="btn plain" type="button" id="cancel">Очистить</button></div>
+      </form>
+      <div class="prev"><div class="lbl">Так увидит покупатель</div><div id="prev"></div></div>
+    </aside>
+  </div>
+</div>
+</main>
+<div id="ftr"></div>
+<script src="js/data.js?v=23"></script>
+<script src="js/site.js?v=23"></script>
+<script src="js/kabinet.js?v=23"></script>
+</body>
+</html>

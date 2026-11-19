@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бронь корта — Синий корт (демо)</title>
+<meta name="description" content="Свободные часы на четырёх крытых кортах. Бронь за минуту, отмена без штрафа за 6 часов.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=23">
+</head>
+<body data-page="bron">
+<div id="hdr"></div>
+<main>
+<section class="phead" style="background-image:url(img/net-balls-blue.jpg);background-position:center 65%">
+  <div class="phead-in">
+    <div><div class="crumbs"><a href="index.html">Главная</a> / Бронь корта</div><h1>Бронь корта</h1></div>
+    <p>Выберите день, корт и час. Отмена без штрафа за <span data-x="cancelHours">6</span> часов, напоминание в Telegram за <span data-x="remindMinutes">30</span> минут.</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="book" id="book">
+    <div class="book-main">
+      <div class="panel pick">
+        <div class="pick-cal"><div class="step"><span>1</span><b>Дата</b></div><div class="cal" id="cal"></div>
+          <p class="note cal-note"><span><i class="dot hi"></i>много свободных часов</span><span><i class="dot lo"></i>осталось мало</span></p></div>
+        <div class="pick-court"><div class="step"><span>2</span><b>Корт</b></div><div class="ccards" id="courts"></div></div>
+      </div>
+      <div class="panel">
+        <div class="step"><span>3</span><b>Время</b><em class="step-sub" id="timeSub"></em></div>
+        <div id="slots"></div>
+        <p class="note" style="margin-top:var(--s2)">Можно выбрать несколько часов подряд. Цена — за корт на час, а не за человека.</p>
+      </div>
+      <div class="panel">
+        <div class="step"><span>4</span><b>Как играем</b></div>
+        <div class="opts" id="opts">
+          <button type="button" class="opt on" data-mode="solo"><b>Только корт</b><small>своя компания, до 4 человек</small></button>
+          <button type="button" class="opt" data-mode="coach"><b>С тренером</b><small>+<span data-price="coach">1 200 ₽</span> за час</small></button>
+          <button type="button" class="opt" data-mode="partner"><b>Найти партнёра</b><small>подберём игрока, корт пополам</small></button>
+        </div>
+        <div class="opt-extra" id="coachPick" hidden><p class="note" style="margin-bottom:12px">Выберите тренера</p><div class="coachpick" id="coach"></div></div>
+        <div class="opt-extra" id="levelPick" hidden><p class="note" style="margin-bottom:12px">Ваш уровень — подберём партнёра такого же</p>
+          <div class="seg" id="level"><button type="button" data-v="Только начинаю">Только начинаю</button><button type="button" class="on" data-v="Играю иногда">Играю иногда</button><button type="button" data-v="Играю регулярно">Играю регулярно</button></div></div>
+        <label class="check" style="margin-top:var(--s3)"><input type="checkbox" id="rent" checked><span>Ракетка и мячи на время игры — бесплатно</span></label>
+      </div>
+      <div class="panel">
+        <div class="step"><span>5</span><b>Кто играет</b></div>
+        <form id="contact" class="form2" novalidate>
+          <label class="field"><span>Как к вам обращаться</span><input name="name" autocomplete="given-name" placeholder="Например, Анна"><em class="e" hidden></em></label>
+          <label class="field"><span>Телефон</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__"><em class="e" hidden></em></label>
+          <label class="check" style="grid-column:1/-1"><input type="checkbox" name="tg" checked><span>Напомнить в Telegram за <span data-x="remindMinutes">30</span> минут — пришлём корт, время и что взять</span></label>
+        </form>
+      </div>
+    </div>
+    <aside class="sum empty" id="sum" aria-live="polite"></aside>
+  </div>
+  <div class="panel done" id="done" hidden></div>
+  <div class="mbar" id="mbar" aria-hidden="true"><div><small id="mbarT"></small><b id="mbarP"></b></div><a class="btn ball" href="#sum">Далее <span class="arr">↓</span></a></div>
+
+  <section class="my" id="my">
+    <div class="lbl">Мои записи</div>
+    <h2>Ваши брони и занятия</h2>
+    <div class="my-list" id="myList"></div>
+  </section>
+</div>
+</main>
+<div id="ftr"></div>
+<script src="js/data.js?v=23"></script>
+<script src="js/site.js?v=23"></script>
+<script src="js/bron.js?v=23"></script>
+</body>
+</html>
