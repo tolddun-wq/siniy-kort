@@ -870,3 +870,30 @@ body.menu-open .hdr .burger span{background:#fff}
 .cal-w,.cal-g{grid-template-columns:repeat(7,minmax(0,1fr))}
 .cal-g button{padding:0;min-width:0}
 @media (max-width:300px){.cal{padding:6px}.cal-g button{font-size:11px;border-radius:7px}.cal-w span{font-size:10px}}
+
+/* v7: баннер — фото всегда во всю ширину, карточки на планшете, отступы кортов */
+@media (max-width:1060px){
+  .banner{height:auto;padding:0;background:#0E305C}
+  .banner:before{position:relative;inset:auto;display:block;aspect-ratio:16/9;max-height:440px;width:100%;background:linear-gradient(180deg,rgba(14,48,92,0) 55%,#0E305C 100%),url(../img/forehand.jpg) 30% 28%/cover}
+  .banner-in{position:relative;right:auto;top:auto;transform:none;width:auto;max-width:640px;padding:0 var(--s4) var(--s4);margin-top:-24px}
+}
+@media (max-width:760px){
+  .banner{padding:0}
+  .banner:before{aspect-ratio:4/3}
+  .banner-in{padding:0 var(--s3) var(--s3)}
+}
+@media (max-width:1240px) and (min-width:560px){
+  .coaches{grid-template-columns:1fr 1fr}
+  .coach{grid-template-columns:1fr}
+  .coach .ph{min-height:0;aspect-ratio:4/3}
+  .coach .in{padding:var(--s3)}
+  .coach h3{font-size:24px}
+}
+@media (max-width:760px) and (min-width:560px){
+  .abons{grid-template-columns:1fr 1fr;gap:var(--s2)}
+  .coaches{gap:var(--s2)}
+  .coach .btn{padding:6px 50px 6px 14px;font-size:14px}
+}
+.ccards{gap:16px}
+@media (max-width:760px){.ccards{gap:12px}}
+@media (max-width:760px) and (min-width:560px){.svc{grid-template-columns:1fr 1fr}.svc-h{grid-column:1/-1}}

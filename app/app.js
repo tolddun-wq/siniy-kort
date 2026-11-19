@@ -215,5 +215,7 @@
 
   // старт: ?tab=faq|my|club открывает нужный раздел (кнопки бота)
   const tab = new URLSearchParams(location.search).get('tab') || tg?.initDataUnsafe?.start_param;
+  const setTabH = () => document.documentElement.style.setProperty('--tabh', $('.tabs').offsetHeight + 'px');
+  setTabH(); addEventListener('resize', setTabH);
   renderBook(); count(); show(['my', 'faq', 'club'].includes(tab) ? tab : 'book');
 })();
