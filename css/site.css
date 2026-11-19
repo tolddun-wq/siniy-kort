@@ -897,3 +897,13 @@ body.menu-open .hdr .burger span{background:#fff}
 .ccards{gap:16px}
 @media (max-width:760px){.ccards{gap:12px}}
 @media (max-width:760px) and (min-width:560px){.svc{grid-template-columns:1fr 1fr}.svc-h{grid-column:1/-1}}
+/* v8: на планшете кнопки по размеру текста, во всю ширину — только на телефоне */
+@media (min-width:481px) and (max-width:760px){
+  .btns{flex-direction:row;flex-wrap:wrap}
+  .btns .btn,.coach .btn,.sum .btn,.res .btn,.banner .btn,.ob-acts .btn,.modal-btns .btn,.done .btn{width:auto;justify-content:space-between;text-align:left;padding:6px 6px 6px 24px}
+  .btns .btn .arr,.coach .btn .arr,.sum .btn .arr,.res .btn .arr,.banner .btn .arr,.ob-acts .btn .arr,.modal-btns .btn .arr,.done .btn .arr{position:static;transform:none}
+  .btns .btn:hover .arr,.coach .btn:hover .arr,.sum .btn:hover .arr,.res .btn:hover .arr,.banner .btn:hover .arr,.ob-acts .btn:hover .arr,.modal-btns .btn:hover .arr,.done .btn:hover .arr{transform:rotate(45deg)}
+  .btns .btn:not(:has(.arr)),.ob-acts .btn:not(:has(.arr)),.modal-btns .btn:not(:has(.arr)){padding:14px 24px}
+  .sum .btn,.res .btn{width:100%}
+  .coach .btn{align-self:flex-start}
+}
