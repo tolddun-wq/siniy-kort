@@ -215,12 +215,12 @@
 
   // ——— вход через Telegram и общие записи с ботом ———
   const TGK = 'sk_tg';
-  const tgUser = () => { try { return JSON.parse(localStorage.getItem(TGK)); } catch (e) { return null; } };
+  const tgUser = () => { try { const u = JSON.parse(localStorage.getItem(TGK)); return u && u.session ? u : null; } catch (e) { return null; } };
   const api = (path, body) => fetch(C.api + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.ok ? r.json() : Promise.reject(r.status));
   async function sync() {
     const u = tgUser(); if (!u) return;
     try {
-      const { list } = await api('/my', { login: u }); if (!Array.isArray(list)) return;
+      const { list } = await api('/my', { session: u.session }); if (!Array.isArray(list)) return;
       const ids = new Set(list.map(b => b.id));
       const local = store.list().filter(b => !b.srv || ids.has(b.id));       // запись отменили в Telegram — убираем
       const have = new Set(local.map(b => b.id));
@@ -230,27 +230,36 @@
   }
   async function pushBooking(b) {
     const u = tgUser(); if (!u) return false;
-    try { await api('/book', { login: u, booking: b }); store.save(store.list().map(x => x.id === b.id ? { ...x, srv: true } : x)); return true; } catch (e) { return false; }
+    try { await api('/book', { session: u.session, booking: b }); store.save(store.list().map(x => x.id === b.id ? { ...x, srv: true } : x)); return true; } catch (e) { return false; }
   }
-  async function cancelBooking(b) { const u = tgUser(); if (u && b.srv) try { await api('/cancel', { login: u, id: b.id }); } catch (e) {} }
-  // официальная кнопка «Войти через Telegram»
+  async function cancelBooking(b) { const u = tgUser(); if (u && b.srv) try { await api('/cancel', { session: u.session, id: b.id }); } catch (e) {} }
+  // вход через бота: своя кнопка → бот (Start один раз) → сайт сам замечает вход
+  const TG_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.2 2.9 11.4c-1 .4-1 1.8 0 2.1l4.6 1.5 1.8 5.5c.3.8 1.3 1 1.9.4l2.6-2.5 4.7 3.5c.7.5 1.7.1 1.9-.7L23 5.6c.2-1-.6-1.8-1.5-1.4Z" fill="currentColor"/><path d="m8 15 9.5-7.2" stroke="#2AABEE" stroke-width="1.6" fill="none"/></svg>';
+  let poll = null;
   function loginButton(box) {
     if (!box) return;
     const u = tgUser();
     if (u) { box.innerHTML = `<div class="tg-in"><span class="tg-dot"></span>Вы вошли через Telegram как <b>${String(u.first_name || '').replace(/</g, '')}</b> — записи общие с ботом <button type="button" class="tg-out">Выйти</button></div>`; box.querySelector('.tg-out').onclick = () => { try { localStorage.removeItem(TGK); } catch (e) {} loginButton(box); }; return; }
-    box.innerHTML = '<div class="tg-login"><p>Войдите через Telegram — брони с сайта и из бота будут общими, напоминание придёт само.</p><div class="tg-w"></div></div>';
-    const s = document.createElement('script'); s.async = true; s.src = 'https://telegram.org/js/telegram-widget.js?22';
-    s.setAttribute('data-telegram-login', C.bot); s.setAttribute('data-size', 'large'); s.setAttribute('data-radius', '20');
-    s.setAttribute('data-onauth', 'SKUI.onTelegramAuth(user)'); s.setAttribute('data-request-access', 'write');
-    box.querySelector('.tg-w').appendChild(s);
+    box.innerHTML = `<div class="tg-login"><p><b>Свяжите сайт с Telegram</b>Брони с сайта и из бота станут общими, напоминание придёт само. Нужно один раз нажать Start в боте.</p><button type="button" class="tg-btn">${TG_ICO}Войти через Telegram</button></div>`;
+    box.querySelector('.tg-btn').onclick = () => startLogin(box);
   }
-  async function onTelegramAuth(user) {
-    try { localStorage.setItem(TGK, JSON.stringify(user)); } catch (e) {}
-    // брони, сделанные на этом сайте до входа, отправляем в бот
-    for (const b of store.list().filter(x => x.type === 'court' && !x.srv)) await pushBooking(b);
-    await sync(); document.querySelectorAll('[data-tglogin]').forEach(loginButton); toast(`Готово, ${user.first_name}! Записи связаны с Telegram`);
+  function startLogin(box) {
+    const code = [...crypto.getRandomValues(new Uint8Array(12))].map(x => (x % 36).toString(36)).join('') + Date.now().toString(36);
+    window.open(`https://t.me/${C.bot}?start=login_${code}`, '_blank', 'noopener');
+    box.innerHTML = `<div class="tg-login wait"><p><b>Ждём подтверждение…</b>В открывшемся боте нажмите <b class="k">Start</b> и вернитесь сюда — вход произойдёт сам, обычно за 5–30 секунд.</p><span class="tg-spin" aria-hidden="true"></span><button type="button" class="tg-again">Открыть бота ещё раз</button></div>`;
+    box.querySelector('.tg-again').onclick = () => window.open(`https://t.me/${C.bot}?start=login_${code}`, '_blank', 'noopener');
+    clearInterval(poll); let tries = 0;
+    poll = setInterval(async () => {
+      if (++tries > 90) { clearInterval(poll); loginButton(box); toast('Вход не подтвердился — попробуйте ещё раз'); return; }
+      try { const r = await api('/login', { code }); if (r.ok) { clearInterval(poll); onLogin({ session: r.session, first_name: r.first_name }); } } catch (e) {}
+    }, 2000);
+  }
+  async function onLogin(u) {
+    try { localStorage.setItem(TGK, JSON.stringify(u)); } catch (e) {}
+    for (const b of store.list().filter(x => x.type === 'court' && !x.srv)) await pushBooking(b);   // брони до входа — в бот
+    await sync(); document.querySelectorAll('[data-tglogin]').forEach(loginButton); toast(`Готово, ${u.first_name}! Сайт связан с Telegram`);
   }
   sync(); setInterval(sync, 20000); document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
 
-  window.SKUI = { tgUser, sync, pushBooking, cancelBooking, loginButton, onTelegramAuth, modal, confirmBox, toast, contactForm, phoneMask, validate, store, reveal, u };
+  window.SKUI = { tgUser, sync, pushBooking, cancelBooking, loginButton, modal, confirmBox, toast, contactForm, phoneMask, validate, store, reveal, u };
 })();

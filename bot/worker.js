@@ -40,6 +40,12 @@ export default {
         if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== (env.WEBHOOK_SECRET || '').trim()) { console.log('Неверный WEBHOOK_SECRET'); return new Response('no', { status: 403 }); }
         const upd = await req.json();
         const m = upd.message;
+        const lc = m?.text?.match(/^\/start login_([a-z0-9]{12,40})$/)?.[1];
+        if (lc) {
+          await env.BOOKINGS.put(`l:${lc}`, JSON.stringify({ id: m.from.id, first_name: m.from.first_name || '' }), { expirationTtl: 900 });
+          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: 'Готово, вы вошли на сайте «Синий корт» ✅\nВернитесь на сайт — записи сайта и бота теперь общие, напоминания будут приходить сюда.' });
+          return new Response('ok');
+        }
         const code = m?.text?.match(/^\/start (b\d{8}\d{2}\d{2}[1-4][scp]\d{1,6})$/)?.[1];
         if (code) {
           const b = fromCode(code, m.from);
@@ -61,6 +67,14 @@ ${b.title}, ${b.when}.
           await tg(env, 'answerCallbackQuery', { callback_query_id: upd.callback_query.id, text: 'Запись отменена' });
         }
         return new Response('ok');
+      }
+      if (url.pathname === '/login' && req.method === 'POST') {
+        const { code } = await req.json();
+        if (!/^[a-z0-9]{12,40}$/.test(code || '')) return json({ ok: false }, 400, cors);
+        const u = JSON.parse((await env.BOOKINGS.get(`l:${code}`)) || 'null');
+        if (!u) return json({ ok: false, wait: true }, 200, cors);
+        await env.BOOKINGS.delete(`l:${code}`);
+        return json({ ok: true, session: await makeSession(u, env.BOT_TOKEN), first_name: u.first_name }, 200, cors);
       }
       if (url.pathname === '/my' && req.method === 'POST') {
         const body = await req.json();
@@ -125,9 +139,26 @@ function clean(b) {
 
 // кто прислал запрос: мини-приложение (initData) или сайт после «Войти через Telegram» (login)
 async function auth(body, env) {
+  if (body.session) return checkSession(body.session, env.BOT_TOKEN);
   if (body.initData) return checkInitData(body.initData, env.BOT_TOKEN);
   if (body.login) return checkLogin(body.login, env.BOT_TOKEN);
   return null;
+}
+
+// сессия сайта после входа через бота: данные + подпись ключом бота, действует 60 дней
+async function hmacHex(keyStr, msg) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode('site:' + keyStr.trim()), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  return [...new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(msg)))].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+async function makeSession(u, botToken) {
+  const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ id: u.id, first_name: u.first_name, exp: Date.now() + 60 * 864e5 }))));
+  return payload + '.' + await hmacHex(botToken, payload);
+}
+async function checkSession(s, botToken) {
+  const [payload, sig] = String(s).split('.');
+  if (!payload || !sig || sig !== await hmacHex(botToken, payload)) return null;
+  try { const u = JSON.parse(decodeURIComponent(escape(atob(payload)))); return u.exp > Date.now() ? u : null; } catch (e) { return null; }
 }
 
 // проверка входа через Telegram на сайте (официальный алгоритм Login Widget)

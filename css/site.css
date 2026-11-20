@@ -919,3 +919,12 @@ body.menu-open .hdr .burger span{background:#fff}
 .tg-in{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;border-radius:30px;background:#fff;box-shadow:var(--sh);font-size:15px}
 .tg-dot{width:10px;height:10px;border-radius:50%;background:#7BC043;box-shadow:0 0 0 4px #E3F1D5}
 .tg-out{margin-left:auto;border:0;background:none;color:var(--court);border-bottom:1px solid currentColor;padding:0;font-size:14px;cursor:pointer}
+.tg-login p b{display:block;color:var(--navy);font-size:17px;margin-bottom:2px}
+.tg-login p b.k{display:inline;font-size:inherit}
+.tg-btn{display:inline-flex;align-items:center;gap:12px;padding:14px 24px 14px 18px;border:0;border-radius:40px;background:#2AABEE;color:#fff;font:500 16px Geologica;cursor:pointer;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.tg-btn svg{width:24px;height:24px;color:#fff}
+.tg-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(42,171,238,.35)}
+.tg-spin{width:28px;height:28px;border-radius:50%;border:3px solid #D3DAE1;border-top-color:#2AABEE;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tg-again{border:0;background:none;color:var(--court);border-bottom:1px solid currentColor;padding:0;font-size:14px;cursor:pointer}
+@media (max-width:480px){.tg-btn{width:100%;justify-content:center}}
