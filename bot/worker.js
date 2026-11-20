@@ -36,7 +36,7 @@ export default {
         return json({ ok: true }, 200, cors);
       }
       if (url.pathname === '/tg' && req.method === 'POST') {
-        if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== env.WEBHOOK_SECRET) return new Response('no', { status: 403 });
+        if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== (env.WEBHOOK_SECRET || '').trim()) { console.log('Неверный WEBHOOK_SECRET'); return new Response('no', { status: 403 }); }
         const upd = await req.json();
         const m = upd.message;
         if (m?.text?.startsWith('/start')) {
@@ -110,6 +110,9 @@ async function checkInitData(initData, botToken) {
 
 const send = (env, chat, text) => tg(env, 'sendMessage', { chat_id: chat, text });
 async function tg(env, method, body) {
-  return fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/${method}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  if (!env.BOT_TOKEN) { console.log('Нет BOT_TOKEN в настройках воркера'); return; }
+  const r = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN.trim()}/${method}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) console.log(`Telegram ответил ${r.status} на ${method}: ${r.status === 401 || r.status === 404 ? 'токен неверный (проверьте BOT_TOKEN)' : (await r.text()).slice(0, 200)}`);
+  return r;
 }
 const json = (o, status, headers) => new Response(JSON.stringify(o), { status, headers: { 'content-type': 'application/json', ...headers } });
