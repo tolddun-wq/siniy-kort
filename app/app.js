@@ -3,7 +3,7 @@
   const S = window.SK, FAQ = window.FAQ, $ = s => document.querySelector(s), C = S.club;
   const tg = window.Telegram?.WebApp;
   const inTg = !!(tg && tg.initData);
-  const API = ''; // адрес сервера напоминаний (Cloudflare Worker), впишем после настройки
+  const API = 'https://siniy-kort-bot.tolddun.workers.dev'; // сервер бота: брони и напоминания
   const SITE = '../index.html';
 
   if (inTg) { tg.ready(); tg.expand(); try { tg.setHeaderColor('#E7EBEF'); tg.setBackgroundColor('#E7EBEF'); tg.disableVerticalSwipes?.(); } catch (e) {} $('#demoTag').hidden = true; }
