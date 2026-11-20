@@ -259,7 +259,16 @@
     for (const b of store.list().filter(x => x.type === 'court' && !x.srv)) await pushBooking(b);   // брони до входа — в бот
     await sync(); document.querySelectorAll('[data-tglogin]').forEach(loginButton); toast(`Готово, ${u.first_name}! Сайт связан с Telegram`);
   }
-  sync(); setInterval(sync, 20000); document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
+  // пришли из бота по ссылке «Сайт клуба» — сразу входим
+  const hm = location.hash.match(/tg=([\w+/=%.-]+)/);
+  if (hm) {
+    try { const s = decodeURIComponent(hm[1]); const u = JSON.parse(decodeURIComponent(escape(atob(s.split('.')[0])))); localStorage.setItem(TGK, JSON.stringify({ session: s, first_name: u.first_name })); } catch (e) {}
+    history.replaceState(null, '', location.pathname + location.search);
+    setTimeout(() => toast('Вы вошли через Telegram — записи сайта и бота общие'), 900);
+  }
+  sync(); setInterval(sync, 10000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
+  addEventListener('focus', sync); addEventListener('pageshow', sync);
 
   window.SKUI = { tgUser, sync, pushBooking, cancelBooking, loginButton, modal, confirmBox, toast, contactForm, phoneMask, validate, store, reveal, u };
 })();

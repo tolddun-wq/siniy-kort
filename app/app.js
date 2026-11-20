@@ -211,7 +211,13 @@
   $('#links').addEventListener('click', e => {
     if (e.target.closest('[data-call]')) return demoCall();
     if (e.target.closest('[data-map]')) return sheet(`<h3>Как добраться</h3><p>${C.city}, ${C.address}. Адрес вымышлен — в настоящем клубе здесь откроется карта с маршрутом.</p>`);
-    const a = e.target.closest('[data-link]'); if (a && inTg) { e.preventDefault(); openLink(a.getAttribute('href')); }
+    const a = e.target.closest('[data-link]'); if (!a || !inTg) return;
+    e.preventDefault();
+    const href = a.getAttribute('href');
+    if (API && href.startsWith('..')) {   // сайт клуба — сразу с входом через Telegram
+      fetch(API + '/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ initData: tg.initData }) })
+        .then(r => r.json()).then(r => openLink(href + (r.session ? '#tg=' + encodeURIComponent(r.session) : ''))).catch(() => openLink(href));
+    } else openLink(href);
   });
 
   // старт: ?tab=faq|my|club открывает нужный раздел (кнопки бота)
@@ -232,7 +238,8 @@
       if (JSON.stringify(l) !== before && cur === 'my') renderMy();
     } catch (e) { /* без сети — работаем с тем, что есть */ }
   }
-  syncFromServer(); setInterval(syncFromServer, 20000);
+  syncFromServer(); setInterval(syncFromServer, 10000); addEventListener('focus', syncFromServer);
+  try { tg?.onEvent?.('activated', syncFromServer); } catch (e) {}
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromServer(); });
   renderBook(); count(); show(['my', 'faq', 'club'].includes(tab) ? tab : 'book');
 })();

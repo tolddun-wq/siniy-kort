@@ -19,54 +19,36 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     try {
       if (url.pathname === '/book' && req.method === 'POST') {
-        const body = await req.json(); const { booking } = body;
+        const body = await req.json();
         const user = await auth(body, env);
         if (!user) return json({ ok: false, error: 'bad signature' }, 401, cors);
-        const b = clean(booking);
+        const b = clean(body.booking);
         if (!b) return json({ ok: false, error: 'bad booking' }, 400, cors);
-        b.chat = user.id; b.name = b.name || user.first_name || '';
-        await env.BOOKINGS.put(`b:${user.id}:${b.id}`, JSON.stringify(b), { expirationTtl: 60 * 60 * 24 * 40 });
-        await send(env, user.id, `${body.login ? 'Бронь с сайта принята' : 'Бронь принята'} ✅\n${b.title}, ${b.when}.\nК оплате на месте: ${b.price} ₽.\nНапомню за ${REMIND_MIN} минут.`);
+        b.name = b.name || user.first_name || '';
+        await addBooking(env, user.id, b);
+        await send(env, user.id, `${body.session ? 'Бронь с сайта принята' : 'Бронь принята'} ✅\n${b.title}, ${b.when}.\nК оплате на месте: ${b.price} ₽.\nНапомню за ${REMIND_MIN} минут.`);
         return json({ ok: true }, 200, cors);
       }
       if (url.pathname === '/cancel' && req.method === 'POST') {
-        const body = await req.json(); const { id } = body;
+        const body = await req.json();
         const user = await auth(body, env);
         if (!user) return json({ ok: false }, 401, cors);
-        await env.BOOKINGS.delete(`b:${user.id}:${String(id).slice(0, 20)}`);
+        await removeBooking(env, user.id, String(body.id).slice(0, 20));
         return json({ ok: true }, 200, cors);
       }
-      if (url.pathname === '/tg' && req.method === 'POST') {
-        if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== (env.WEBHOOK_SECRET || '').trim()) { console.log('Неверный WEBHOOK_SECRET'); return new Response('no', { status: 403 }); }
-        const upd = await req.json();
-        const m = upd.message;
-        const lc = m?.text?.match(/^\/start login_([a-z0-9]{12,40})$/)?.[1];
-        if (lc) {
-          await env.BOOKINGS.put(`l:${lc}`, JSON.stringify({ id: m.from.id, first_name: m.from.first_name || '' }), { expirationTtl: 900 });
-          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: 'Готово, вы вошли на сайте «Синий корт» ✅\nВернитесь на сайт — записи сайта и бота теперь общие, напоминания будут приходить сюда.' });
-          return new Response('ok');
-        }
-        const code = m?.text?.match(/^\/start (b\d{8}\d{2}\d{2}[1-4][scp]\d{1,6})$/)?.[1];
-        if (code) {
-          const b = fromCode(code, m.from);
-          await env.BOOKINGS.put(`b:${m.from.id}:${b.id}`, JSON.stringify({ ...b, chat: m.chat.id }), { expirationTtl: 60 * 60 * 24 * 40 });
-          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: `Бронь с сайта добавлена ✅
-${b.title}, ${b.when}.
-К оплате на месте: ${b.price} ₽.
-Напомню за ${REMIND_MIN} минут до игры.`,
-            reply_markup: { inline_keyboard: [[{ text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }]] } });
-          return new Response('ok');
-        }
-        if (m?.text?.startsWith('/start')) {
-          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: 'Привет! Это теннисный клуб «Синий корт» (демо).\nЗдесь можно забронировать корт, посмотреть свои записи и найти ответ на вопрос.',
-            reply_markup: { inline_keyboard: [[{ text: '🎾 Забронировать корт', web_app: { url: env.APP_URL } }], [{ text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }, { text: 'Вопросы', web_app: { url: env.APP_URL + '?tab=faq' } }]] } });
-        }
-        if (upd.callback_query?.data?.startsWith('cancel:')) {
-          const key = upd.callback_query.data.slice(7);
-          if (key.startsWith(`b:${upd.callback_query.from.id}:`)) await env.BOOKINGS.delete(key);
-          await tg(env, 'answerCallbackQuery', { callback_query_id: upd.callback_query.id, text: 'Запись отменена' });
-        }
-        return new Response('ok');
+      if (url.pathname === '/my' && req.method === 'POST') {
+        const body = await req.json();
+        const user = await auth(body, env);
+        if (!user) return json({ ok: false }, 401, cors);
+        const list = (await getList(env, user.id)).map(b => ({ id: b.id, title: b.title, when: b.when, date: b.date, from: b.from, price: b.price, name: b.name }));
+        return json({ ok: true, list }, 200, cors);
+      }
+      // мини-приложение просит ссылку на сайт, где человек уже вошёл
+      if (url.pathname === '/session' && req.method === 'POST') {
+        const body = await req.json();
+        const user = await checkInitData(body.initData, env.BOT_TOKEN);
+        if (!user) return json({ ok: false }, 401, cors);
+        return json({ ok: true, session: await makeSession(user, env.BOT_TOKEN) }, 200, cors);
       }
       if (url.pathname === '/login' && req.method === 'POST') {
         const { code } = await req.json();
@@ -76,14 +58,34 @@ ${b.title}, ${b.when}.
         await env.BOOKINGS.delete(`l:${code}`);
         return json({ ok: true, session: await makeSession(u, env.BOT_TOKEN), first_name: u.first_name }, 200, cors);
       }
-      if (url.pathname === '/my' && req.method === 'POST') {
-        const body = await req.json();
-        const user = await auth(body, env);
-        if (!user) return json({ ok: false }, 401, cors);
-        const page = await env.BOOKINGS.list({ prefix: `b:${user.id}:` });
-        const list = [];
-        for (const k of page.keys) { const b = JSON.parse((await env.BOOKINGS.get(k.name)) || 'null'); if (b) list.push({ id: b.id, title: b.title, when: b.when, date: b.date, from: b.from, price: b.price, name: b.name }); }
-        return json({ ok: true, list }, 200, cors);
+      if (url.pathname === '/tg' && req.method === 'POST') {
+        if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== (env.WEBHOOK_SECRET || '').trim()) { console.log('Неверный WEBHOOK_SECRET'); return new Response('no', { status: 403 }); }
+        const upd = await req.json();
+        const m = upd.message;
+        const site = async from => SITE_URL + '#tg=' + await makeSession(from, env.BOT_TOKEN);
+        const lc = m?.text?.match(/^\/start login_([a-z0-9]{12,40})$/)?.[1];
+        if (lc) {
+          await env.BOOKINGS.put(`l:${lc}`, JSON.stringify({ id: m.from.id, first_name: m.from.first_name || '' }), { expirationTtl: 900 });
+          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: 'Готово, вы вошли на сайте «Синий корт» ✅\nВернитесь на сайт — записи сайта и бота теперь общие, напоминания будут приходить сюда.' });
+          return new Response('ok');
+        }
+        const code = m?.text?.match(/^\/start (b\d{8}\d{2}\d{2}[1-4][scp]\d{1,6})$/)?.[1];
+        if (code) {
+          const b = fromCode(code, m.from);
+          await addBooking(env, m.from.id, b);
+          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: `Бронь с сайта добавлена ✅\n${b.title}, ${b.when}.\nК оплате на месте: ${b.price} ₽.\nНапомню за ${REMIND_MIN} минут до игры.`,
+            reply_markup: { inline_keyboard: [[{ text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }]] } });
+          return new Response('ok');
+        }
+        if (m?.text?.startsWith('/start')) {
+          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: 'Привет! Это теннисный клуб «Синий корт» (демо).\nЗдесь можно забронировать корт, посмотреть свои записи и найти ответ на вопрос.',
+            reply_markup: { inline_keyboard: [[{ text: '🎾 Забронировать корт', web_app: { url: env.APP_URL } }], [{ text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }, { text: 'Вопросы', web_app: { url: env.APP_URL + '?tab=faq' } }], [{ text: '🌐 Сайт клуба (вы уже вошли)', url: await site(m.from) }]] } });
+        }
+        if (upd.callback_query?.data?.startsWith('c:')) {
+          await removeBooking(env, upd.callback_query.from.id, upd.callback_query.data.slice(2));
+          await tg(env, 'answerCallbackQuery', { callback_query_id: upd.callback_query.id, text: 'Запись отменена' });
+        }
+        return new Response('ok');
       }
       return new Response('Синий корт — сервер бота работает', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     } catch (e) {
@@ -91,28 +93,39 @@ ${b.title}, ${b.when}.
     }
   },
 
-  // cron: раз в 5 минут
+  // cron: раз в 5 минут — напоминания и уборка прошедших броней
   async scheduled(_event, env) {
     const now = Date.now();
     let cursor;
     do {
-      const page = await env.BOOKINGS.list({ prefix: 'b:', cursor });
+      const page = await env.BOOKINGS.list({ prefix: 'u:', cursor });
       for (const k of page.keys) {
-        const b = JSON.parse((await env.BOOKINGS.get(k.name)) || 'null');
-        if (!b || b.reminded) continue;
-        const start = startTime(b);
-        const left = (start - now) / 60000;
-        if (left <= REMIND_MIN && left > -10) {
-          await tg(env, 'sendMessage', { chat_id: b.chat, text: `Через ${Math.max(1, Math.round(left))} минут ваша игра 🎾\n${b.title}, ${b.when}.\nВозьмите кроссовки со светлой подошвой — ракетку дадим.`,
-            reply_markup: { inline_keyboard: [[{ text: 'Отменить', callback_data: 'cancel:' + k.name }, { text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }]] } });
-          b.reminded = true;
-          await env.BOOKINGS.put(k.name, JSON.stringify(b), { expirationTtl: 60 * 60 * 24 * 2 });
+        const uid = k.name.slice(2);
+        const list = await getList(env, uid); let changed = false;
+        for (const b of list) {
+          if (b.reminded) continue;
+          const left = (startTime(b) - now) / 60000;
+          if (left <= REMIND_MIN && left > -10) {
+            await tg(env, 'sendMessage', { chat_id: uid, text: `Через ${Math.max(1, Math.round(left))} минут ваша игра 🎾\n${b.title}, ${b.when}.\nВозьмите кроссовки со светлой подошвой — ракетку дадим.`,
+              reply_markup: { inline_keyboard: [[{ text: 'Отменить', callback_data: 'c:' + b.id }, { text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }]] } });
+            b.reminded = true; changed = true;
+          }
         }
+        const fresh = list.filter(b => startTime(b) > now - 864e5);
+        if (changed || fresh.length !== list.length) await saveList(env, uid, fresh);
       }
       cursor = page.list_complete ? null : page.cursor;
     } while (cursor);
   },
 };
+
+const SITE_URL = 'https://siniy-kort.vercel.app/bron.html';
+
+// все брони человека — одна запись u:<id>: читается сразу после записи, без задержки списков
+async function getList(env, uid) { try { return JSON.parse((await env.BOOKINGS.get(`u:${uid}`)) || '[]'); } catch (e) { return []; } }
+async function saveList(env, uid, list) { if (list.length) await env.BOOKINGS.put(`u:${uid}`, JSON.stringify(list.slice(-50))); else await env.BOOKINGS.delete(`u:${uid}`); }
+async function addBooking(env, uid, b) { const l = (await getList(env, uid)).filter(x => x.id !== b.id); l.push(b); await saveList(env, uid, l); }
+async function removeBooking(env, uid, id) { await saveList(env, uid, (await getList(env, uid)).filter(x => x.id !== id)); }
 
 // бронь из кода с сайта: b + ГГГГММДД + ЧЧ(начало) + ЧЧ(конец) + корт + формат(s/c/p) + цена
 const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
