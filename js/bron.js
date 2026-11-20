@@ -141,12 +141,13 @@
     const b = UI.store.add({ type: 'court', title: `${c.name}${st.mode === 'coach' ? ' с тренером' : st.mode === 'partner' ? ' и партнёр по уровню' : ''}`,
       when: `${human(st.day)}, ${from}:00–${to}:00`, date: st.day, from, price: p.total, name: form.name.value.trim(), tg: form.tg.checked,
       coach: st.mode === 'coach' ? S.coachById(st.coach).name : '' });
+    const linked = !!UI.tgUser(); if (linked) UI.pushBooking(b);
     $('#book').hidden = true; $('#mbar').classList.remove('show');
     const done = $('#done'); done.hidden = false;
     done.innerHTML = `<i class="tball" aria-hidden="true"></i><div class="lbl">Бронь создана</div><h2>${b.title}, ${b.when}</h2>
       <p>${b.name}, корт ваш. ${b.coach ? `Тренер ${b.coach} встретит вас у корта. ` : ''}${st.mode === 'partner' ? 'Партнёра подберём и пришлём его имя за день до игры. ' : ''}${b.tg ? `Напоминание придёт в Telegram за ${S.extras.remindMinutes} минут. ` : ''}К оплате на месте: ${S.fmt(b.price)}.</p>
-      <div class="btns"><a class="btn ball" href="https://t.me/${S.club.bot}?start=${tgPayload(b, st)}" target="_blank" rel="noopener">Получить напоминание в Telegram <span class="arr">↗</span></a><a class="btn navy" href="#my">Мои записи <span class="arr">↗</span></a><button class="btn plain" type="button" id="again">Забронировать ещё</button></div>
-      <p class="note" style="margin-top:12px">Бот запомнит бронь, пришлёт подтверждение и напомнит за ${S.extras.remindMinutes} минут. Бронь появится и в мини-приложении.</p>`;
+      <div class="btns">${linked ? '' : `<a class="btn ball" href="https://t.me/${S.club.bot}?start=${tgPayload(b, st)}" target="_blank" rel="noopener">Получить напоминание в Telegram <span class="arr">↗</span></a>`}<a class="btn navy" href="#my">Мои записи <span class="arr">↗</span></a><button class="btn plain" type="button" id="again">Забронировать ещё</button></div>
+      <p class="note" style="margin-top:12px">${linked ? `Бронь уже в Telegram: бот прислал подтверждение и напомнит за ${S.extras.remindMinutes} минут.` : `Бот запомнит бронь, пришлёт подтверждение и напомнит за ${S.extras.remindMinutes} минут. Чтобы не нажимать это каждый раз — войдите через Telegram в разделе «Мои записи».`}</p>`;
     done.scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('#again').addEventListener('click', () => { done.hidden = true; $('#book').hidden = false; st.hours = []; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     renderMy();
@@ -158,7 +159,7 @@
   // ——— мои записи ———
   function renderMy() {
     const list = UI.store.list();
-    $('#myList').innerHTML = list.length ? list.slice().reverse().map(b => `<div class="bk"><span class="tag">${b.type === 'court' ? 'Корт' : b.type === 'group' ? 'Группа' : 'Абонемент'}</span><b>${b.title}</b><small>${b.when}</small><small>${S.fmt(b.price)}${b.tg ? ' · напомним в Telegram' : ''}</small><button class="x" type="button" data-id="${b.id}">${b.type === 'abon' ? 'Отменить заявку' : 'Отменить запись'}</button></div>`).join('')
+    $('#myList').innerHTML = list.length ? list.slice().reverse().map(b => `<div class="bk"><span class="tag">${b.type === 'court' ? 'Корт' : b.type === 'group' ? 'Группа' : 'Абонемент'}${b.srv ? ' · в Telegram' : ''}</span><b>${b.title}</b><small>${b.when}</small><small>${S.fmt(b.price)}${b.tg ? ' · напомним в Telegram' : ''}</small><button class="x" type="button" data-id="${b.id}">${b.type === 'abon' ? 'Отменить заявку' : 'Отменить запись'}</button></div>`).join('')
       : `<div class="empty-box">Пока пусто. Выберите час выше — бронь появится здесь, и её можно будет отменить.</div>`;
   }
   $('#myList').addEventListener('click', e => {
@@ -166,9 +167,11 @@
     const b = UI.store.list().find(i => i.id === x.dataset.id); if (!b) return;
     let late = false;
     if (b.date && b.from != null) { const start = new Date(b.date + 'T00:00'); start.setHours(b.from); late = (start - new Date()) / 36e5 < S.extras.cancelHours; }
-    UI.confirmBox('Отменить запись?', `${b.title}, ${b.when}. ${late ? `До начала меньше ${S.extras.cancelHours} часов — по правилам клуба удержим половину стоимости.` : `Штрафа нет: до начала больше ${S.extras.cancelHours} часов.`}`, 'Да, отменить', () => { UI.store.remove(b.id); renderMy(); UI.toast('Запись отменена'); });
+    UI.confirmBox('Отменить запись?', `${b.title}, ${b.when}. ${late ? `До начала меньше ${S.extras.cancelHours} часов — по правилам клуба удержим половину стоимости.` : `Штрафа нет: до начала больше ${S.extras.cancelHours} часов.`}`, 'Да, отменить', () => { UI.cancelBooking(b); UI.store.remove(b.id); renderMy(); UI.toast('Запись отменена'); });
   });
 
+  document.addEventListener('sk-sync', renderMy);
+  UI.loginButton(document.querySelector('[data-tglogin]'));
   function renderAll() { renderCal(); renderCourts(); renderSlots(); renderSum(); }
   markCoach(); renderAll(); setMode(st.mode); renderMy();
   if (location.hash === '#my') setTimeout(() => $('#my').scrollIntoView(), 80);

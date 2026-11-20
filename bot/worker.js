@@ -1,7 +1,8 @@
 // «Синий корт» — сервер бота на Cloudflare Workers (бесплатный тариф).
 // Что делает:
 //  1) POST /book   — мини-приложение присылает бронь; проверяем подпись Telegram и сохраняем в KV.
-//  2) POST /cancel — отмена брони.
+//  2) POST /cancel — отмена брони.  POST /my — все брони человека (для сайта и приложения).
+//     Сайт подтверждает человека через «Войти через Telegram», приложение — через initData.
 //  3) POST /tg     — сообщения боту (/start): отвечаем кнопкой «Открыть приложение».
 //  4) Каждые 5 минут (cron) — ищем брони, до которых ≤30 минут, и шлём напоминание.
 // Секреты (задаёт владелец в панели Cloudflare, в код не пишем): BOT_TOKEN.
@@ -18,19 +19,19 @@ export default {
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     try {
       if (url.pathname === '/book' && req.method === 'POST') {
-        const { initData, booking } = await req.json();
-        const user = await checkInitData(initData, env.BOT_TOKEN);
+        const body = await req.json(); const { booking } = body;
+        const user = await auth(body, env);
         if (!user) return json({ ok: false, error: 'bad signature' }, 401, cors);
         const b = clean(booking);
         if (!b) return json({ ok: false, error: 'bad booking' }, 400, cors);
         b.chat = user.id; b.name = b.name || user.first_name || '';
         await env.BOOKINGS.put(`b:${user.id}:${b.id}`, JSON.stringify(b), { expirationTtl: 60 * 60 * 24 * 40 });
-        await send(env, user.id, `Бронь принята ✅\n${b.title}, ${b.when}.\nК оплате на месте: ${b.price} ₽.\nНапомню за ${REMIND_MIN} минут.`);
+        await send(env, user.id, `${body.login ? 'Бронь с сайта принята' : 'Бронь принята'} ✅\n${b.title}, ${b.when}.\nК оплате на месте: ${b.price} ₽.\nНапомню за ${REMIND_MIN} минут.`);
         return json({ ok: true }, 200, cors);
       }
       if (url.pathname === '/cancel' && req.method === 'POST') {
-        const { initData, id } = await req.json();
-        const user = await checkInitData(initData, env.BOT_TOKEN);
+        const body = await req.json(); const { id } = body;
+        const user = await auth(body, env);
         if (!user) return json({ ok: false }, 401, cors);
         await env.BOOKINGS.delete(`b:${user.id}:${String(id).slice(0, 20)}`);
         return json({ ok: true }, 200, cors);
@@ -62,8 +63,8 @@ ${b.title}, ${b.when}.
         return new Response('ok');
       }
       if (url.pathname === '/my' && req.method === 'POST') {
-        const { initData } = await req.json();
-        const user = await checkInitData(initData, env.BOT_TOKEN);
+        const body = await req.json();
+        const user = await auth(body, env);
         if (!user) return json({ ok: false }, 401, cors);
         const page = await env.BOOKINGS.list({ prefix: `b:${user.id}:` });
         const list = [];
@@ -122,6 +123,27 @@ function clean(b) {
   return { id: s(b.id, 20).replace(/[^a-z0-9]/gi, ''), title: s(b.title, 80), when: s(b.when, 80), date: b.date, from: b.from, price: Math.max(0, Math.min(1e6, Number(b.price) || 0)), name: s(b.name, 40) };
 }
 
+// кто прислал запрос: мини-приложение (initData) или сайт после «Войти через Telegram» (login)
+async function auth(body, env) {
+  if (body.initData) return checkInitData(body.initData, env.BOT_TOKEN);
+  if (body.login) return checkLogin(body.login, env.BOT_TOKEN);
+  return null;
+}
+
+// проверка входа через Telegram на сайте (официальный алгоритм Login Widget)
+async function checkLogin(login, botToken) {
+  if (!login || !login.hash || !botToken) return null;
+  const { hash, ...data } = login;
+  const check = Object.keys(data).filter(k => data[k] !== undefined && data[k] !== null).sort().map(k => `${k}=${data[k]}`).join('\n');
+  const enc = new TextEncoder();
+  const secret = await crypto.subtle.digest('SHA-256', enc.encode(botToken.trim()));
+  const key = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = [...new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(check)))].map(x => x.toString(16).padStart(2, '0')).join('');
+  if (sig !== hash) return null;
+  if (Date.now() / 1000 - Number(data.auth_date) > 86400 * 30) return null; // вход действует 30 дней
+  return { id: data.id, first_name: data.first_name };
+}
+
 // проверка подписи данных от Telegram (официальный алгоритм WebApp)
 async function checkInitData(initData, botToken) {
   if (!initData || !botToken) return null;
@@ -129,6 +151,7 @@ async function checkInitData(initData, botToken) {
   const hash = p.get('hash'); p.delete('hash');
   const check = [...p.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('\n');
   const enc = new TextEncoder();
+  botToken = botToken.trim();
   const k1 = await crypto.subtle.importKey('raw', enc.encode('WebAppData'), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const secret = await crypto.subtle.sign('HMAC', k1, enc.encode(botToken));
   const k2 = await crypto.subtle.importKey('raw', secret, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);

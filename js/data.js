@@ -12,6 +12,7 @@ window.SK = (() => {
     open: 7, close: 23,
     telegram: 'https://t.me/isthisthedaggr',
     bot: 'siniy_kort_demo_bot',
+    api: 'https://siniy-kort-bot.tolddun.workers.dev',
   };
 
   // Цена корта за час по времени и дню

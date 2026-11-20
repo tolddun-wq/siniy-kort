@@ -912,3 +912,10 @@ body.menu-open .hdr .burger span{background:#fff}
   .tiles,.chips,.seg.scroll,.daytabs{scroll-padding-inline:var(--s2)}
   .tiles>*:first-child,.chips>*:first-child{scroll-snap-align:start}
 }
+/* вход через Telegram */
+.tgbox{margin-top:var(--s3)}
+.tg-login{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2) var(--s3);padding:var(--s3);border-radius:var(--r-s);background:#fff;box-shadow:var(--sh)}
+.tg-login p{flex:1 1 280px;font-size:15px;color:var(--mute)}
+.tg-in{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 20px;border-radius:30px;background:#fff;box-shadow:var(--sh);font-size:15px}
+.tg-dot{width:10px;height:10px;border-radius:50%;background:#7BC043;box-shadow:0 0 0 4px #E3F1D5}
+.tg-out{margin-left:auto;border:0;background:none;color:var(--court);border-bottom:1px solid currentColor;padding:0;font-size:14px;cursor:pointer}

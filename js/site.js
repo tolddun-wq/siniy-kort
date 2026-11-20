@@ -213,5 +213,44 @@
   }
   reveal();
 
-  window.SKUI = { modal, confirmBox, toast, contactForm, phoneMask, validate, store, reveal, u };
+  // ——— вход через Telegram и общие записи с ботом ———
+  const TGK = 'sk_tg';
+  const tgUser = () => { try { return JSON.parse(localStorage.getItem(TGK)); } catch (e) { return null; } };
+  const api = (path, body) => fetch(C.api + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).then(r => r.ok ? r.json() : Promise.reject(r.status));
+  async function sync() {
+    const u = tgUser(); if (!u) return;
+    try {
+      const { list } = await api('/my', { login: u }); if (!Array.isArray(list)) return;
+      const ids = new Set(list.map(b => b.id));
+      const local = store.list().filter(b => !b.srv || ids.has(b.id));       // запись отменили в Telegram — убираем
+      const have = new Set(local.map(b => b.id));
+      list.forEach(b => { if (!have.has(b.id)) local.push({ ...b, type: 'court', tg: true, srv: true }); });
+      store.save(local); document.dispatchEvent(new Event('sk-sync'));
+    } catch (e) { if (e === 401) { try { localStorage.removeItem(TGK); } catch (er) {} } }
+  }
+  async function pushBooking(b) {
+    const u = tgUser(); if (!u) return false;
+    try { await api('/book', { login: u, booking: b }); store.save(store.list().map(x => x.id === b.id ? { ...x, srv: true } : x)); return true; } catch (e) { return false; }
+  }
+  async function cancelBooking(b) { const u = tgUser(); if (u && b.srv) try { await api('/cancel', { login: u, id: b.id }); } catch (e) {} }
+  // официальная кнопка «Войти через Telegram»
+  function loginButton(box) {
+    if (!box) return;
+    const u = tgUser();
+    if (u) { box.innerHTML = `<div class="tg-in"><span class="tg-dot"></span>Вы вошли через Telegram как <b>${String(u.first_name || '').replace(/</g, '')}</b> — записи общие с ботом <button type="button" class="tg-out">Выйти</button></div>`; box.querySelector('.tg-out').onclick = () => { try { localStorage.removeItem(TGK); } catch (e) {} loginButton(box); }; return; }
+    box.innerHTML = '<div class="tg-login"><p>Войдите через Telegram — брони с сайта и из бота будут общими, напоминание придёт само.</p><div class="tg-w"></div></div>';
+    const s = document.createElement('script'); s.async = true; s.src = 'https://telegram.org/js/telegram-widget.js?22';
+    s.setAttribute('data-telegram-login', C.bot); s.setAttribute('data-size', 'large'); s.setAttribute('data-radius', '20');
+    s.setAttribute('data-onauth', 'SKUI.onTelegramAuth(user)'); s.setAttribute('data-request-access', 'write');
+    box.querySelector('.tg-w').appendChild(s);
+  }
+  async function onTelegramAuth(user) {
+    try { localStorage.setItem(TGK, JSON.stringify(user)); } catch (e) {}
+    // брони, сделанные на этом сайте до входа, отправляем в бот
+    for (const b of store.list().filter(x => x.type === 'court' && !x.srv)) await pushBooking(b);
+    await sync(); document.querySelectorAll('[data-tglogin]').forEach(loginButton); toast(`Готово, ${user.first_name}! Записи связаны с Telegram`);
+  }
+  sync(); setInterval(sync, 20000); document.addEventListener('visibilitychange', () => { if (!document.hidden) sync(); });
+
+  window.SKUI = { tgUser, sync, pushBooking, cancelBooking, loginButton, onTelegramAuth, modal, confirmBox, toast, contactForm, phoneMask, validate, store, reveal, u };
 })();

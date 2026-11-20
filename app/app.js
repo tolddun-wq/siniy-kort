@@ -130,7 +130,8 @@
           try { localStorage.setItem('sk_name', name); } catch (er) {}
           const b = { id: Date.now().toString(36), type: 'court', title: `${c.name}${st.mode === 'coach' ? ' с тренером' : st.mode === 'partner' ? ' и партнёр по уровню' : ''}`, when: `${human(st.day)}, ${from}:00–${to}:00`, date: st.day, from, price, name, tg: true, src: 'app' };
           const l = store.list(); l.push(b); store.save(l);
-          if (API && inTg) fetch(API + '/book', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ initData: tg.initData, booking: b }) }).catch(() => {});
+          if (API && inTg) fetch(API + '/book', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ initData: tg.initData, booking: b }) })
+            .then(r => { if (r.ok) store.save(store.list().map(x => x.id === b.id ? { ...x, srv: true } : x)); }).catch(() => {});
           close(); haptic('ok'); st.hours = []; renderBook();
           sheet(`<h3>Готово, ${name.replace(/</g, '')}!</h3><p>${b.title}, ${b.when}. За ${S.extras.remindMinutes} минут бот пришлёт напоминание — вот такое:</p>${preview(b)}<div class="btns"><button class="btn navy wide" type="button" data-go>Мои записи</button></div>`,
             (el2, close2) => el2.querySelector('[data-go]').addEventListener('click', () => { close2(); show('my'); }));
@@ -223,11 +224,15 @@
     try {
       const r = await fetch(API + '/my', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ initData: tg.initData }) });
       const { list } = await r.json(); if (!Array.isArray(list)) return;
-      const l = store.list(), ids = new Set(l.map(b => b.id)); let added = 0;
-      list.forEach(b => { if (!ids.has(b.id)) { l.push({ ...b, type: 'court', tg: true }); added++; } });
-      if (added) { store.save(l); if (cur === 'my') renderMy(); }
+      const ids = new Set(list.map(b => b.id));
+      const l = store.list().filter(b => !b.srv || ids.has(b.id));          // отменили на сайте — убираем
+      const have = new Set(l.map(b => b.id));
+      list.forEach(b => { if (!have.has(b.id)) l.push({ ...b, type: 'court', tg: true, srv: true }); });
+      const before = JSON.stringify(store.list()); store.save(l);
+      if (JSON.stringify(l) !== before && cur === 'my') renderMy();
     } catch (e) { /* без сети — работаем с тем, что есть */ }
   }
-  syncFromServer();
+  syncFromServer(); setInterval(syncFromServer, 20000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) syncFromServer(); });
   renderBook(); count(); show(['my', 'faq', 'club'].includes(tab) ? tab : 'book');
 })();
