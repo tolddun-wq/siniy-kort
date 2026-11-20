@@ -233,3 +233,5 @@ a{color:inherit;text-decoration:none}
 /* итог прижат к панели */
 .scroll{padding-bottom:calc(var(--tabh,70px) + 10px)}
 .sumbar{bottom:0}
+.qa .qt{flex:1;min-width:0}
+.qa mark{padding:0 1px;border-radius:3px;box-decoration-break:clone;-webkit-box-decoration-break:clone}

@@ -39,6 +39,17 @@ export default {
         if (req.headers.get('X-Telegram-Bot-Api-Secret-Token') !== (env.WEBHOOK_SECRET || '').trim()) { console.log('Неверный WEBHOOK_SECRET'); return new Response('no', { status: 403 }); }
         const upd = await req.json();
         const m = upd.message;
+        const code = m?.text?.match(/^\/start (b\d{8}\d{2}\d{2}[1-4][scp]\d{1,6})$/)?.[1];
+        if (code) {
+          const b = fromCode(code, m.from);
+          await env.BOOKINGS.put(`b:${m.from.id}:${b.id}`, JSON.stringify({ ...b, chat: m.chat.id }), { expirationTtl: 60 * 60 * 24 * 40 });
+          await tg(env, 'sendMessage', { chat_id: m.chat.id, text: `Бронь с сайта добавлена ✅
+${b.title}, ${b.when}.
+К оплате на месте: ${b.price} ₽.
+Напомню за ${REMIND_MIN} минут до игры.`,
+            reply_markup: { inline_keyboard: [[{ text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }]] } });
+          return new Response('ok');
+        }
         if (m?.text?.startsWith('/start')) {
           await tg(env, 'sendMessage', { chat_id: m.chat.id, text: 'Привет! Это теннисный клуб «Синий корт» (демо).\nЗдесь можно забронировать корт, посмотреть свои записи и найти ответ на вопрос.',
             reply_markup: { inline_keyboard: [[{ text: '🎾 Забронировать корт', web_app: { url: env.APP_URL } }], [{ text: 'Мои записи', web_app: { url: env.APP_URL + '?tab=my' } }, { text: 'Вопросы', web_app: { url: env.APP_URL + '?tab=faq' } }]] } });
@@ -49,6 +60,15 @@ export default {
           await tg(env, 'answerCallbackQuery', { callback_query_id: upd.callback_query.id, text: 'Запись отменена' });
         }
         return new Response('ok');
+      }
+      if (url.pathname === '/my' && req.method === 'POST') {
+        const { initData } = await req.json();
+        const user = await checkInitData(initData, env.BOT_TOKEN);
+        if (!user) return json({ ok: false }, 401, cors);
+        const page = await env.BOOKINGS.list({ prefix: `b:${user.id}:` });
+        const list = [];
+        for (const k of page.keys) { const b = JSON.parse((await env.BOOKINGS.get(k.name)) || 'null'); if (b) list.push({ id: b.id, title: b.title, when: b.when, date: b.date, from: b.from, price: b.price, name: b.name }); }
+        return json({ ok: true, list }, 200, cors);
       }
       return new Response('Синий корт — сервер бота работает', { headers: { 'content-type': 'text/plain; charset=utf-8' } });
     } catch (e) {
@@ -78,6 +98,16 @@ export default {
     } while (cursor);
   },
 };
+
+// бронь из кода с сайта: b + ГГГГММДД + ЧЧ(начало) + ЧЧ(конец) + корт + формат(s/c/p) + цена
+const WD = ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'];
+const MON = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+function fromCode(code, from) {
+  const y = code.slice(1, 5), mo = code.slice(5, 7), d = code.slice(7, 9), h1 = +code.slice(9, 11), h2 = +code.slice(11, 13), court = code[13], mode = code[14], price = +code.slice(15);
+  const dt = new Date(Date.UTC(+y, +mo - 1, +d));
+  const title = `Корт ${court}${mode === 'c' ? ' с тренером' : mode === 'p' ? ' и партнёр по уровню' : ''}`;
+  return { id: 'w' + code.slice(1, 13) + court, title, when: `${WD[dt.getUTCDay()]}, ${+d} ${MON[+mo - 1]}, ${h1}:00–${h2}:00`, date: `${y}-${mo}-${d}`, from: h1, price, name: from.first_name || '' };
+}
 
 // время начала брони в UTC (дата и час клуба по Казани)
 function startTime(b) {

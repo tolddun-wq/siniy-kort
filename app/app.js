@@ -173,7 +173,7 @@
   // ——— вопросы ———
   const HINTS = ['Сколько стоит корт', 'Абик', 'Что взять с собой', 'Ребёнку 6 лет', 'Где парковка', 'Отменить бронь'];
   const mark = (text, q) => { const ws = FAQ.words(q).filter(w => w.length > 2); if (!ws.length) return text; return text.replace(/[А-Яа-яЁё]+/g, w => ws.some(s => w.toLowerCase().replace(/ё/g, 'е').startsWith(s.slice(0, Math.max(3, s.length - 1)))) ? `<mark>${w}</mark>` : w); };
-  const qa = (f, open, q) => `<div class="qa${open ? ' open' : ''}"><button type="button" aria-expanded="${open}">${q ? mark(f.q, q) : f.q}<i aria-hidden="true"></i></button><div class="a"><div><p>${f.a}</p></div></div></div>`;
+  const qa = (f, open, q) => `<div class="qa${open ? ' open' : ''}"><button type="button" aria-expanded="${open}"><span class="qt">${q ? mark(f.q, q) : f.q}</span><i aria-hidden="true"></i></button><div class="a"><div><p>${f.a}</p></div></div></div>`;
   function renderFaq() {
     const q = $('#q').value.trim();
     $('#hints').innerHTML = q ? '' : HINTS.map(t => `<button type="button">${t}</button>`).join('');
@@ -217,5 +217,17 @@
   const tab = new URLSearchParams(location.search).get('tab') || tg?.initDataUnsafe?.start_param;
   const setTabH = () => document.documentElement.style.setProperty('--tabh', $('.tabs').offsetHeight + 'px');
   setTabH(); addEventListener('resize', setTabH);
+  // брони с сервера бота (в том числе сделанные на сайте) — добавить к своим
+  async function syncFromServer() {
+    if (!API || !inTg) return;
+    try {
+      const r = await fetch(API + '/my', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ initData: tg.initData }) });
+      const { list } = await r.json(); if (!Array.isArray(list)) return;
+      const l = store.list(), ids = new Set(l.map(b => b.id)); let added = 0;
+      list.forEach(b => { if (!ids.has(b.id)) { l.push({ ...b, type: 'court', tg: true }); added++; } });
+      if (added) { store.save(l); if (cur === 'my') renderMy(); }
+    } catch (e) { /* без сети — работаем с тем, что есть */ }
+  }
+  syncFromServer();
   renderBook(); count(); show(['my', 'faq', 'club'].includes(tab) ? tab : 'book');
 })();

@@ -11,6 +11,7 @@ window.SK = (() => {
     email: 'hello@siniy-kort.demo',
     open: 7, close: 23,
     telegram: 'https://t.me/isthisthedaggr',
+    bot: 'siniy_kort_demo_bot',
   };
 
   // Цена корта за час по времени и дню

@@ -97,25 +97,37 @@
   function contactForm(title, text, onDone) {
     modal(`<h3>${title}</h3><p>${text}</p><form novalidate>
       <label class="field"><span>Как к вам обращаться</span><input name="name" autocomplete="given-name" placeholder="Например, Анна"><em class="e" hidden></em></label>
-      <label class="field"><span>Телефон</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 (___) ___-__-__"><em class="e" hidden></em></label>
+      <label class="field"><span>Телефон</span><input name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 или +375"><em class="e" hidden></em></label>
       <label class="check" style="margin-bottom:var(--s3)"><input type="checkbox" name="tg" checked><span>Напомнить в Telegram за ${S.extras.remindMinutes} минут</span></label>
       <button class="btn navy" type="submit">Записаться <span class="arr">↗</span></button></form>`,
       { onOpen: (m, close) => { const f = m.querySelector('form'); phoneMask(f.phone); f.addEventListener('submit', e => { e.preventDefault(); if (!validate(f)) return; close(); onDone({ name: f.name.value.trim(), phone: f.phone.value, tg: f.tg.checked }); }); } });
   }
+  // Телефон: Россия +7 (XXX) XXX-XX-XX или Беларусь +375 (XX) XXX-XX-XX
+  const isBy = d => d.startsWith('375') || d.startsWith('80');
   function phoneMask(inp) {
     inp.addEventListener('input', () => {
-      let d = inp.value.replace(/\D/g, ''); if (d.startsWith('8')) d = '7' + d.slice(1); if (!d.startsWith('7')) d = '7' + d; d = d.slice(0, 11);
+      let d = inp.value.replace(/\D/g, '');
+      if (!d) { inp.value = ''; return; }
+      if (d.startsWith('80') && !inp.value.trim().startsWith('+')) d = '375' + d.slice(2);   // белорусский 80…
+      if (isBy(d) || '375'.startsWith(d)) {
+        d = d.slice(0, 12); const p = d.slice(3); let r = '+' + d.slice(0, 3);
+        if (p.length) r += ' (' + p.slice(0, 2); if (p.length >= 2) r += ')'; if (p.length > 2) r += ' ' + p.slice(2, 5);
+        if (p.length > 5) r += '-' + p.slice(5, 7); if (p.length > 7) r += '-' + p.slice(7, 9);
+        inp.value = r; return;
+      }
+      if (d.startsWith('8')) d = '7' + d.slice(1); if (!d.startsWith('7')) d = '7' + d; d = d.slice(0, 11);
       const p = d.slice(1); let r = '+7';
       if (p.length) r += ' (' + p.slice(0, 3); if (p.length >= 3) r += ')'; if (p.length > 3) r += ' ' + p.slice(3, 6);
       if (p.length > 6) r += '-' + p.slice(6, 8); if (p.length > 8) r += '-' + p.slice(8, 10);
       inp.value = r;
     });
   }
+  const phoneOk = v => { const d = v.replace(/\D/g, ''); return d.startsWith('375') ? d.length === 12 : d.length === 11; };
   function validate(f) {
     let ok = true;
     const set = (inp, msg) => { const fl = inp.closest('.field'); fl.classList.toggle('err', !!msg); const e = fl.querySelector('.e'); e.hidden = !msg; e.textContent = msg || ''; if (msg && ok) inp.focus(); if (msg) ok = false; };
     if (f.name) set(f.name, f.name.value.trim().length < 2 ? 'Напишите имя — так тренер поздоровается с вами' : '');
-    if (f.phone) set(f.phone, f.phone.value.replace(/\D/g, '').length !== 11 ? 'Номер неполный: нужно 10 цифр после +7' : '');
+    if (f.phone) set(f.phone, !phoneOk(f.phone.value) ? 'Номер неполный: после +7 нужно 10 цифр, после +375 — 9' : '');
     return ok;
   }
 

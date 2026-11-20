@@ -907,3 +907,8 @@ body.menu-open .hdr .burger span{background:#fff}
   .sum .btn,.res .btn{width:100%}
   .coach .btn{align-self:flex-start}
 }
+/* v9: листаемые ряды на телефоне начинаются с общего отступа */
+@media (max-width:760px){
+  .tiles,.chips,.seg.scroll,.daytabs{scroll-padding-inline:var(--s2)}
+  .tiles>*:first-child,.chips>*:first-child{scroll-snap-align:start}
+}

@@ -145,11 +145,15 @@
     const done = $('#done'); done.hidden = false;
     done.innerHTML = `<i class="tball" aria-hidden="true"></i><div class="lbl">Бронь создана</div><h2>${b.title}, ${b.when}</h2>
       <p>${b.name}, корт ваш. ${b.coach ? `Тренер ${b.coach} встретит вас у корта. ` : ''}${st.mode === 'partner' ? 'Партнёра подберём и пришлём его имя за день до игры. ' : ''}${b.tg ? `Напоминание придёт в Telegram за ${S.extras.remindMinutes} минут. ` : ''}К оплате на месте: ${S.fmt(b.price)}.</p>
-      <div class="btns"><a class="btn navy" href="#my">Мои записи <span class="arr">↗</span></a><button class="btn plain" type="button" id="again">Забронировать ещё</button></div>`;
+      <div class="btns"><a class="btn ball" href="https://t.me/${S.club.bot}?start=${tgPayload(b, st)}" target="_blank" rel="noopener">Получить напоминание в Telegram <span class="arr">↗</span></a><a class="btn navy" href="#my">Мои записи <span class="arr">↗</span></a><button class="btn plain" type="button" id="again">Забронировать ещё</button></div>
+      <p class="note" style="margin-top:12px">Бот запомнит бронь, пришлёт подтверждение и напомнит за ${S.extras.remindMinutes} минут. Бронь появится и в мини-приложении.</p>`;
     done.scrollIntoView({ behavior: 'smooth', block: 'start' });
     $('#again').addEventListener('click', () => { done.hidden = true; $('#book').hidden = false; st.hours = []; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
     renderMy();
   }
+
+  // код брони для бота: b + ГГГГММДД + час начала + час конца + корт + формат + цена
+  function tgPayload(b, s) { return 'b' + b.date.replace(/-/g, '') + String(b.from).padStart(2, '0') + String(s.hours[s.hours.length - 1] + 1).padStart(2, '0') + s.court + s.mode[0] + b.price; }
 
   // ——— мои записи ———
   function renderMy() {
